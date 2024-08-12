@@ -1,6 +1,10 @@
 package com.example.mygame
 
-import com.badlogic.gdx.ApplicationAdapter
+import com.badlogic.gdx.Game
 
-/** [com.badlogic.gdx.ApplicationListener] implementation shared by all platforms. */
-class RUN : ApplicationAdapter()
+class RUN : Game() {
+    override fun create() {
+        setScreen(MainGameScreen())
+
+    }
+}
