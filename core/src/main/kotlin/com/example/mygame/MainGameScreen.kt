@@ -7,6 +7,7 @@ import com.badlogic.gdx.graphics.GL20
 import com.badlogic.gdx.graphics.Texture
 import com.badlogic.gdx.graphics.g2d.BitmapFont
 import com.badlogic.gdx.graphics.g2d.SpriteBatch
+import com.badlogic.gdx.graphics.g2d.TextureRegion
 import com.badlogic.gdx.scenes.scene2d.Stage
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton.TextButtonStyle
@@ -26,11 +27,18 @@ class MainGameScreen : Screen {
     private val characterTextureWalk2 = Texture("character_walk2.png")
     private var currentCharacterTexture = characterTextureNormal
 
+    // 배경이미지 관련 변수
+    private val backgroundTexture = Texture("main_back.png")
+    private val backgroundRegion1: TextureRegion
+    private val backgroundRegion2: TextureRegion
+    private var backgroundX1 = 0f
+    private var backgroundX2: Float
+    private var backgroundSpeed = 100f // 배경이 움직이는 속도
+
     // 캐릭터 상태 관련 변수
     private enum class CharacterState {
         WALKING, JUMPING, SLIDING, FALLING
     }
-
     private var characterState = CharacterState.WALKING
 
     // 캐릭터 위치 변수 추가
@@ -52,24 +60,35 @@ class MainGameScreen : Screen {
     private val stage = Stage(ScreenViewport())
 
     init {
+        // 배경 이미지를 화면 크기에 맞게 조정
+        backgroundRegion1 = TextureRegion(backgroundTexture)
+        backgroundRegion1.setRegionWidth(Gdx.graphics.width)
+        backgroundRegion1.setRegionHeight(Gdx.graphics.height)
+
+        backgroundRegion2 = TextureRegion(backgroundTexture)
+        backgroundRegion2.setRegionWidth(Gdx.graphics.width)
+        backgroundRegion2.setRegionHeight(Gdx.graphics.height)
+
+        backgroundX2 = backgroundRegion1.regionWidth.toFloat()
+
         // 기본적인 Drawable을 사용하여 TextButton 스타일 설정
         val upDrawable = BaseDrawable()
-        upDrawable.minWidth = 200f
-        upDrawable.minHeight = 100f
-
         val downDrawable = BaseDrawable()
-        downDrawable.minWidth = 200f
-        downDrawable.minHeight = 100f
+
+        // 폰트 스케일 조정
+        val font = BitmapFont()
+        font.data.setScale(4f) // 폰트 크기 조절 (4배로 설정)
 
         val textButtonStyle = TextButtonStyle()
-        textButtonStyle.font = BitmapFont() // 기본 폰트 설정
+        textButtonStyle.font = font // 스케일된 폰트를 사용
         textButtonStyle.fontColor = Color.WHITE // 텍스트 색상 설정
         textButtonStyle.up = upDrawable
         textButtonStyle.down = downDrawable
 
         // 점프 버튼 생성
         val jumpButton = TextButton("Jump", textButtonStyle)
-        jumpButton.setPosition(50f, 50f)
+        jumpButton.setSize(300f, 150f) // 버튼의 크기를 명시적으로 설정
+        jumpButton.setPosition(100f, 50f) // X 위치를 100f로 조정하여 약간 왼쪽으로 이동
         jumpButton.addListener(object : ChangeListener() {
             override fun changed(event: ChangeEvent?, actor: com.badlogic.gdx.scenes.scene2d.Actor?) {
                 if (jumpCount < 2 && characterState != CharacterState.SLIDING) {
@@ -85,7 +104,8 @@ class MainGameScreen : Screen {
 
         // 슬라이드 버튼 생성
         val slideButton = TextButton("Slide", textButtonStyle)
-        slideButton.setPosition(250f, 50f)
+        slideButton.setSize(300f, 150f) // 버튼의 크기를 명시적으로 설정
+        slideButton.setPosition(1200f, 50f) // X 위치를 1200f로 조정하여 약간 오른쪽으로 이동
         slideButton.addListener(object : ChangeListener() {
             override fun changed(event: ChangeEvent?, actor: com.badlogic.gdx.scenes.scene2d.Actor?) {
                 if (!isSliding && characterState == CharacterState.WALKING) {
@@ -109,7 +129,7 @@ class MainGameScreen : Screen {
     }
 
     private fun startWalkingAnimation() {
-        walkTimer?.cancel() // 기존 타이머가 있다면 취소
+        stopWalkingAnimation() // 중복 실행 방지
         walkTimer = Timer.schedule(object : Timer.Task() {
             private var toggle = true
 
@@ -145,7 +165,22 @@ class MainGameScreen : Screen {
         }
     }
 
+    private fun updateBackground(delta: Float) {
+        backgroundX1 -= backgroundSpeed * delta
+        backgroundX2 -= backgroundSpeed * delta
+        // 배경 이미지가 화면 왼쪽으로 완전히 사라지면 위치를 초기화하여 반복되도록 설정
+        if (backgroundX1 + backgroundRegion1.regionWidth < 0) {
+            backgroundX1 = backgroundX2 + backgroundRegion2.regionWidth
+        }
+        if (backgroundX2 + backgroundRegion2.regionWidth < 0) {
+            backgroundX2 = backgroundX1 + backgroundRegion1.regionWidth
+        }
+    }
+
     override fun render(delta: Float) {
+        // 배경 업데이트
+        updateBackground(delta)
+
         // 슬라이드 처리
         handleSlide(delta)
 
@@ -168,10 +203,31 @@ class MainGameScreen : Screen {
             Gdx.app.log("CharacterState", "Falling: Returning to normal texture.")
         }
 
-        // 캐릭터 이동 처리
+        // 캐릭터의 상태에 따라 텍스처를 결정
+        when (characterState) {
+            CharacterState.WALKING -> {
+                // 걷기 애니메이션: 250ms 간격으로 텍스처 교체
+                val time = (System.currentTimeMillis() / 250) % 2
+                currentCharacterTexture = if (time == 0L) characterTextureWalk1 else characterTextureWalk2
+            }
+            CharacterState.JUMPING -> {
+                currentCharacterTexture = characterTextureJump
+            }
+            CharacterState.SLIDING -> {
+                currentCharacterTexture = characterTextureSlide
+            }
+            CharacterState.FALLING -> {
+                currentCharacterTexture = characterTextureNormal
+            }
+        }
+
+        // 화면 지우기
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT)
-        // 화면에 그리기
+        // 화면에 배경 그리기
         batch.begin()
+        batch.draw(backgroundRegion1, backgroundX1, 0f)
+        batch.draw(backgroundRegion2, backgroundX2, 0f)
+        // 캐릭터 그리기
         batch.draw(currentCharacterTexture, characterX, characterY)
         batch.end()
 
@@ -188,6 +244,7 @@ class MainGameScreen : Screen {
         characterTextureSlide.dispose()
         characterTextureWalk1.dispose()
         characterTextureWalk2.dispose()
+        backgroundTexture.dispose()
         stage.dispose()
     }
 
