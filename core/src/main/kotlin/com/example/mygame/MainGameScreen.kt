@@ -20,6 +20,13 @@ import kotlin.random.Random
 
 class MainGameScreen : Screen {
 
+    // 바닥 텍스처 및 위치 변수
+    private val groundTexture = Texture("ground.png")
+    private val groundRegion = TextureRegion(groundTexture)
+
+    private val groundSpeed = 300f
+    private var groundX1 = 0f
+
     // 젤리 텍스처 및 위치 변수
     private val jellyTexture = Texture("jelly.png")
     private val jellies = mutableListOf<Rectangle>()
@@ -73,6 +80,9 @@ class MainGameScreen : Screen {
     private val stage = Stage(ScreenViewport())
 
     init {
+        //바닥의 두 번째 부분 시작 위치 설정
+        groundX1 = 0f
+
         // 배경 이미지를 화면 크기에 맞게 조정
         backgroundRegion1 = TextureRegion(backgroundTexture)
         backgroundRegion1.setRegionWidth(Gdx.graphics.width)
@@ -141,6 +151,14 @@ class MainGameScreen : Screen {
 
         // 젤리 초기 위치 설정 (여러 개의 젤리 추가)
         createJellies()
+    }
+    private fun updateGround(delta: Float){
+        groundX1 -= groundSpeed * delta
+
+        //바닥 텍스처가 화면을 벗어나면 오른쪽 끝으로 이동
+        if(groundX1 + groundTexture.width <=0){
+            groundX1 += groundTexture.width
+        }
     }
     private fun createJellies(){
         //2단 점프와 1단점프 동선에 계단형으로 젤리 배치
@@ -236,10 +254,19 @@ class MainGameScreen : Screen {
         // 화면 지우기
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT)
 
-        // 배경 그리기
+        // 배치 시작
         batch.begin()
+
+        // 배경 그리기
         batch.draw(backgroundRegion1, backgroundX1, 0f)
         batch.draw(backgroundRegion2, backgroundX2, 0f)
+
+        // 바닥 그리기
+        var groundX = groundX1
+        while (groundX < Gdx.graphics.width) {
+            batch.draw(groundRegion, groundX, 0f) // 바닥을 0 높이에 그리기
+            groundX += groundTexture.width
+        }
 
         // 게임이 클리어되었을 때의 처리
         if (gameCleared) {
@@ -253,6 +280,9 @@ class MainGameScreen : Screen {
 
         // 배경 업데이트
         updateBackground(delta)
+
+        //바닥 업데이트
+        updateGround(delta)
 
         // 젤리 업데이트
         updateJellies(delta)
@@ -292,7 +322,6 @@ class MainGameScreen : Screen {
             CharacterState.SLIDING -> currentCharacterTexture = characterTextureSlide
             CharacterState.FALLING -> currentCharacterTexture = characterTextureNormal
         }
-
         // 캐릭터 그리기
         batch.draw(currentCharacterTexture, characterX, characterY)
         // 젤리 그리기
@@ -321,6 +350,7 @@ class MainGameScreen : Screen {
         characterTextureWalk2.dispose()
         backgroundTexture.dispose()
         jellyTexture.dispose()
+        groundTexture.dispose()
         stage.dispose()
     }
 
