@@ -26,7 +26,9 @@
 
 ### Image
 ![7CBE55BE-4CBE-44CE-BC02-949C0E051D4A](https://github.com/user-attachments/assets/d11690e2-7550-4efb-8610-7464a0b0bbdc)
+<img width="699" alt="image" src="https://github.com/user-attachments/assets/6c40109f-850b-4b1a-b588-7441dd3fdb31">
 
+<img width="686" alt="image" src="https://github.com/user-attachments/assets/d053e894-83fa-4fae-8313-a1c0d17cd951">
 
 
 ### Troubleshooting
