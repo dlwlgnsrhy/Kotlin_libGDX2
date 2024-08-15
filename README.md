@@ -25,10 +25,8 @@
 - **배운 점**: 게임의 상태를 효율적으로 관리하는 방법과 UI 초기화의 중요성을 경험하였으며, 이를 통해 사용자 경험을 개선할 수 있었습니다.
 
 ### Image
-![7CBE55BE-4CBE-44CE-BC02-949C0E051D4A](https://github.com/user-attachments/assets/d11690e2-7550-4efb-8610-7464a0b0bbdc)
-<img width="699" alt="image" src="https://github.com/user-attachments/assets/6c40109f-850b-4b1a-b588-7441dd3fdb31">
+![image](https://github.com/user-attachments/assets/486aabeb-7a49-4c3f-bc47-6d8cd7bf29c7)
 
-<img width="686" alt="image" src="https://github.com/user-attachments/assets/d053e894-83fa-4fae-8313-a1c0d17cd951">
 
 
 ### Troubleshooting
