@@ -16,7 +16,6 @@ import com.badlogic.gdx.scenes.scene2d.utils.BaseDrawable
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener
 import com.badlogic.gdx.utils.Timer
 import com.badlogic.gdx.utils.viewport.ScreenViewport
-import kotlin.random.Random
 
 class MainGameScreen : Screen {
 
