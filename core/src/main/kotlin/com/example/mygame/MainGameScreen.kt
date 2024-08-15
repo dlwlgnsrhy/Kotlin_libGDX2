@@ -161,6 +161,7 @@ class MainGameScreen : Screen {
         createObstaclesAndJellies()
     }
 
+
     private fun updateGround(delta: Float){
         groundX1 -= groundSpeed * delta
         //바닥 텍스처가 화면을 벗어나면 오른쪽 끝으로 이동
