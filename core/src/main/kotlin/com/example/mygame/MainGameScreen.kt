@@ -278,9 +278,55 @@ class MainGameScreen : Screen {
         obstacles.clear()
         createObstaclesAndJellies()
 
-        stage.clear()
-        stage.addActor(stage.actors.firstOrNull() ?: return) // 배열이 비어있지 않은 경우에만 버튼을 추가합니다.
-        gamePaused = false //게임 재개
+        stage.clear()  // 스테이지 초기화
+
+        // 점프와 슬라이드 버튼을 다시 추가
+        val jumpButton = TextButton("Jump", createTextButtonStyle()).apply {
+            setSize(300f, 150f)
+            setPosition(100f, 50f)
+            addListener(object : ChangeListener() {
+                override fun changed(event: ChangeEvent?, actor: com.badlogic.gdx.scenes.scene2d.Actor?) {
+                    if (jumpCount < 2 && characterState != CharacterState.SLIDING) {
+                        velocityY = jumpVelocity
+                        characterState = CharacterState.JUMPING
+                        currentCharacterTexture = characterTextureJump
+                        jumpCount++
+                        Gdx.app.log("CharacterState", "Jumping: Jump texture applied. Jump count: $jumpCount")
+                        stopWalkingAnimation()
+                    }
+                }
+            })
+        }
+        stage.addActor(jumpButton)
+
+        val slideButton = TextButton("Slide", createTextButtonStyle()).apply {
+            setSize(300f, 150f)
+            setPosition(1200f, 50f)
+            addListener(object : ChangeListener() {
+                override fun changed(event: ChangeEvent?, actor: com.badlogic.gdx.scenes.scene2d.Actor?) {
+                    if (!isSliding && characterState == CharacterState.WALKING) {
+                        isSliding = true
+                        slideTimer = 0f
+                        characterState = CharacterState.SLIDING
+                        currentCharacterTexture = characterTextureSlide
+                        Gdx.app.log("CharacterState", "Sliding: Slide texture applied.")
+                        stopWalkingAnimation()
+                    }
+                }
+            })
+        }
+        stage.addActor(slideButton)
+
+        gamePaused = false // 게임 재개
+    }
+    // TextButtonStyle을 생성하는 메서드
+    private fun createTextButtonStyle(): TextButtonStyle {
+        return TextButtonStyle().apply {
+            font = BitmapFont().apply { data.setScale(4f) }
+            fontColor = Color.WHITE
+            up = BaseDrawable()
+            down = BaseDrawable()
+        }
     }
 
     private fun startWalkingAnimation() {
